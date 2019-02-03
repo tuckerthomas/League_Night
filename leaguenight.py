@@ -2,6 +2,7 @@ import sys
 import json
 import re
 import time
+import configparser
 import requests
 
 from PySide2.QtWidgets import QApplication, QMessageBox, QListWidgetItem
@@ -26,7 +27,11 @@ class LeagueNight:
 
     def __init__(self):
         super().__init__()
-        self.api_key = ""  # MOVE TO EXTERNAL CONFIG FILE
+
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+
+        self.api_key = config['DEFAULT']['RIOT_API_KEY']
 
         self.initUI()
 
@@ -42,7 +47,7 @@ class LeagueNight:
 
         self.player_pool_model = (1, 5)
 
-        self.window.playerPoolList()
+        ## self.window.playerPoolList() TODO: Start here
 
         self.window.usernameEdit.textEdited.connect(self.enable_add_player)
         self.window.usernameEdit.returnPressed.connect(self.add_player)
