@@ -8,7 +8,7 @@ import requests
 from PySide2.QtWidgets import QApplication, QMessageBox, QListWidgetItem
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtCore import QFile
-from riot import *
+from LeagueNightClasses import *
 
 
 def decode_summoner_dto_json(dct):
@@ -32,6 +32,8 @@ class LeagueNight:
         config.read('config.ini')
 
         self.api_key = config['DEFAULT']['RIOT_API_KEY']
+
+        self.match_list = []
 
         self.initUI()
 
@@ -220,28 +222,59 @@ class LeagueNight:
                                 QMessageBox.NoButton)
             return
 
-        def add_points_for_team(team_list):
+        def add_points_for_team(team_list, team_num) -> List[SummonerStats]:
+            summoner_stat_list = []
+
             for i in range(team_list.count()):
                 summoner_widget = team_list.itemWidget(team_list.item(i))
+                summoner_first_game = False
+                summoner_support = False
+                summoner_honor = False
+                summoner_points = 0
 
                 # TODO: Determine point weights
+                #  Make point values configurable
                 if summoner_widget.checkFirstGame.isChecked():
+                    summoner_first_game = True
+                    summoner_points += 3
                     summoner_widget.summoner.points += 3
 
-                # TODO: Determine point weights
                 if summoner_widget.checkSupport.isChecked():
-                    summoner_widget.summoner.points += 3
-                # TODO: Determine point weights
-                if summoner_widget.checkHonor.isChecked():
+                    summoner_support = True
+                    summoner_points += 3
                     summoner_widget.summoner.points += 3
 
+                if summoner_widget.checkHonor.isChecked():
+                    summoner_honor = True
+                    summoner_points += 3
+                    summoner_widget.summoner.points += 3
+
+                summoner_stat = SummonerStats(
+                    summoner_widget.summoner,
+                    summoner_support,
+                    summoner_first_game,
+                    summoner_honor,
+                    summoner_points,
+                    team_num
+                )
+
+                summoner_stat_list.append(summoner_stat)
+
+            return summoner_stat_list
+
+        # TODO: Go through current matchlist and check all points from there(for the whole day, since the
+        #  original launch of the program), instead of calculating the last match
         def update_points_labels(player_pool_list):
             for i in range(player_pool_list.count()):
                 summoner_widget = player_pool_list.itemWidget(player_pool_list.item(i))
                 summoner_widget.pointLabel.setText(str(summoner_widget.summoner.points))
 
-        add_points_for_team(self.window.team1List)
-        add_points_for_team(self.window.team2List)
+        team1_stat_list = add_points_for_team(self.window.team1List, 1)
+        team2_stat_list = add_points_for_team(self.window.team2List, 2)
+
+        total_stat_list = team1_stat_list + team2_stat_list
+
+        self.match_list.append(Match(time.time(), total_stat_list))
 
         update_points_labels(self.window.playerPoolList)
 

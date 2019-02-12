@@ -2,6 +2,7 @@ import datetime
 from typing import List
 
 
+# Riot's Summoner Class
 class SummonerDTO:
     def __init__(
         self,
@@ -25,6 +26,7 @@ class SummonerDTO:
         super().__init__()
 
 
+# A class to track a summoner's stats per game
 class SummonerStats:
     def __init__(
             self,
@@ -32,25 +34,28 @@ class SummonerStats:
             support: bool,
             first_game: bool,
             honored: bool,
-            match_points: int
+            match_points: int,
+            team: int
     ):
         self.summoner = summoner
         self.support = support
         self.first_game = first_game
         self.honored = honored
         self.match_points = match_points
+        self.team = team
 
         super().__init__()
 
 
+# A class to record a match's results
 class Match:
     def __init__(
             self,
             time: datetime,
-            players: List[SummonerDTO],
+            players: List[SummonerStats],
 
     ):
         self.time = time
         self.players = players
 
-    super().__init__()
+        super().__init__()
