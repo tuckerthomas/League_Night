@@ -57,6 +57,8 @@ class LeagueNight:
         self.window.removePlayerTeam1Button.clicked.connect(self.remove_player_team1)
         self.window.removePlayerTeam2Button.clicked.connect(self.remove_player_team2)
 
+        self.window.teamAddButton.clicked.connect(self.add_points)
+
         # Other Stuff
         self.start_time = time.time()
 
@@ -64,7 +66,7 @@ class LeagueNight:
         sys.exit(app.exec_())
 
     def enable_add_player(self):
-        if (self.window.usernameEdit.text() is not None and self.window.usernameEdit.text() != ""):
+        if self.window.usernameEdit.text() is not None and self.window.usernameEdit.text() != "":
             self.window.addPlayerButton.setEnabled(True)
         else:
             QMessageBox.warning(
@@ -119,7 +121,8 @@ class LeagueNight:
 
         return PlayerTeamWidget
 
-    def check_player_exists(self, list, summoner):
+    # Check if a Summoner exists on a specific Team List
+    def check_player_exists_on_team(self, list, summoner):
         for i in range(list.count()):
             player_widget = list.itemWidget(list.item(i))
 
@@ -128,8 +131,19 @@ class LeagueNight:
 
         return False
 
+    # Checks if players any players are in Summoner Pool
+    def check_for_players(self):
+        if self.window.playerPoolList.count() > 0:
+            return True
+        return False
+
     # Adds a player from the Player Pool to the Team 1 List
     def add_player_team1(self):
+        if not self.check_for_players():
+            QMessageBox.warning(self.window, "League Night", "There are currently no Players", QMessageBox.Ok,
+                                QMessageBox.NoButton)
+            return
+
         team1List = self.window.team1List
         playerPoolList = self.window.playerPoolList
 
@@ -138,11 +152,11 @@ class LeagueNight:
         for index in players:
             player = playerPoolList.itemWidget(index)
 
-            if self.check_player_exists(self.window.team2List, player.summoner):
-                QMessageBox.warning(self.window, "League Night", "Player is already on the other Team", QMessageBox.Ok,
-                                    QMessageBox.NoButton)
-            elif self.check_player_exists(self.window.team1List, player.summoner):
+            if self.check_player_exists_on_team(self.window.team1List, player.summoner):
                 QMessageBox.warning(self.window, "League Night", "Player is already on this Team", QMessageBox.Ok,
+                                    QMessageBox.NoButton)
+            elif self.check_player_exists_on_team(self.window.team2List, player.summoner):
+                QMessageBox.warning(self.window, "League Night", "Player is already on the other Team", QMessageBox.Ok,
                                     QMessageBox.NoButton)
             else:
                 item = QListWidgetItem(team1List)
@@ -156,6 +170,11 @@ class LeagueNight:
 
     # Adds a player from the Player Pool to the Team 2 List
     def add_player_team2(self):
+        if not self.check_for_players():
+            QMessageBox.warning(self.window, "League Night", "There are currently no Players", QMessageBox.Ok,
+                                QMessageBox.NoButton)
+            return
+
         team2List = self.window.team2List
         playerPoolList = self.window.playerPoolList
 
@@ -164,11 +183,11 @@ class LeagueNight:
         for index in players:
             player = playerPoolList.itemWidget(index)
 
-            if self.check_player_exists(self.window.team1List, player.summoner):
-                QMessageBox.warning(self.window, "League Night", "Player is already on the other Team", QMessageBox.Ok,
-                                    QMessageBox.NoButton)
-            elif self.check_player_exists(self.window.team2List, player.summoner):
+            if self.check_player_exists_on_team(self.window.team2List, player.summoner):
                 QMessageBox.warning(self.window, "League Night", "Player is already on this Team", QMessageBox.Ok,
+                                    QMessageBox.NoButton)
+            elif self.check_player_exists_on_team(self.window.team1List, player.summoner):
+                QMessageBox.warning(self.window, "League Night", "Player is already on the other Team", QMessageBox.Ok,
                                     QMessageBox.NoButton)
             else:
                 item = QListWidgetItem(team2List)
@@ -193,6 +212,38 @@ class LeagueNight:
 
         for item in team2List.selectedItems():
             team2List.takeItem(team2List.row(item))
+
+    # Tally the points for each team and update the player pool list
+    def add_points(self):
+        if not self.check_for_players():
+            QMessageBox.warning(self.window, "League Night", "There are currently no Players", QMessageBox.Ok,
+                                QMessageBox.NoButton)
+            return
+
+        def add_points_for_team(team_list):
+            for i in range(team_list.count()):
+                summoner_widget = team_list.itemWidget(team_list.item(i))
+
+                # TODO: Determine point weights
+                if summoner_widget.checkFirstGame.isChecked():
+                    summoner_widget.summoner.points += 3
+
+                # TODO: Determine point weights
+                if summoner_widget.checkSupport.isChecked():
+                    summoner_widget.summoner.points += 3
+                # TODO: Determine point weights
+                if summoner_widget.checkHonor.isChecked():
+                    summoner_widget.summoner.points += 3
+
+        def update_points_labels(player_pool_list):
+            for i in range(player_pool_list.count()):
+                summoner_widget = player_pool_list.itemWidget(player_pool_list.item(i))
+                summoner_widget.pointLabel.setText(str(summoner_widget.summoner.points))
+
+        add_points_for_team(self.window.team1List)
+        add_points_for_team(self.window.team2List)
+
+        update_points_labels(self.window.playerPoolList)
 
     def get_summoner(self, username: str):
         summoner_regex = re.compile('^[0-9\w+ _\.]+$', re.UNICODE)
