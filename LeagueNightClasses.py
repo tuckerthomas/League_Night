@@ -5,14 +5,14 @@ from typing import List
 # Riot's Summoner Class
 class SummonerDTO:
     def __init__(
-        self,
-        profileIconId: int,
-        name: str,
-        puuid: str,
-        summonerLevel: int,
-        revisionDate: int,
-        id: int,
-        accountId: int
+            self,
+            profileIconId: int,
+            name: str,
+            puuid: str,
+            summonerLevel: int,
+            revisionDate: int,
+            id: int,
+            accountId: int
     ):
         self.profileIconId = profileIconId
         self.name = name

@@ -167,6 +167,7 @@ class LeagueNight:
                 team1Player.playerLabel.setText(player.summoner.name)
 
                 item.setSizeHint(team1Player.sizeHint())
+
                 team1List.addItem(item)
                 team1List.setItemWidget(item, team1Player)
 
@@ -198,6 +199,7 @@ class LeagueNight:
                 team2Player.playerLabel.setText(player.summoner.name)
 
                 item.setSizeHint(team2Player.sizeHint())
+
                 team2List.addItem(item)
                 team2List.setItemWidget(item, team2Player)
 
@@ -221,6 +223,11 @@ class LeagueNight:
             QMessageBox.warning(self.window, "League Night", "There are currently no Players", QMessageBox.Ok,
                                 QMessageBox.NoButton)
             return
+
+        if QMessageBox.question(self.window, "League Night", "Are all Players correct?", QMessageBox.Yes,
+            QMessageBox.No) == QMessageBox.No:
+            return
+
 
         def add_points_for_team(team_list, team_num) -> List[SummonerStats]:
             summoner_stat_list = []
@@ -262,7 +269,7 @@ class LeagueNight:
 
             return summoner_stat_list
 
-        # TODO: Go through current matchlist and check all points from there(for the whole day, since the
+        # TODO: Go through current match list and check all points from there(for the whole day, since the
         #  original launch of the program), instead of calculating the last match
         def update_points_labels(player_pool_list):
             for i in range(player_pool_list.count()):
